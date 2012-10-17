@@ -11,18 +11,29 @@ private:
     node **select(const T &val) {
       return (val < value ? &left : &right);
     }
+
+    void balance() {
+      const int diff = (left ? left->height() : 0) - (right ? right->height() : 0);
+      if (std::abs(diff) > 1) {
+	std::cout << "need to re-balance" << std::endl;
+      }
+
+      if (parent)
+	parent->balance();
+    }
     
   public:
-    node(const T &value) : value(value), left(), right() {}
+    node(const T &value, node *parent) : value(value), left(), right(), parent(parent) {}
     T value;
-    node *left, *right;
+    node *left, *right, *parent;
 
     void insert(const T &val) {
       node **branch = select(val);
       assert(branch);
       if (!*branch) { // the branch doesn't exist
-        *branch = new node(val);
+        *branch = new node(val, this);
         // TODO: check ancestors (parents) that their children heights differ by at most 1. otherwise we need to rotate.
+	balance();
       }
       else {
         (*branch)->insert(val);
@@ -62,6 +73,9 @@ private:
       std::size_t h_l = 0;
       std::size_t h_r = 0;
 
+      // TODO: cache height, invalidate on insert (some false-invalidations)
+      //       if we don't care about duplicates, we can just keep running counters
+      
       if (left)
         h_l = left->height();
       
@@ -80,7 +94,7 @@ public:
   
   void insert(const value_type &val) {
     if (!root) {
-      root = new node(val);
+      root = new node(val, 0);
       return;
     }
     else {
