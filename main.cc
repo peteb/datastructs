@@ -115,7 +115,6 @@ public:
   }
 };
 
-
 int main() {
   avl_set<int> s;
   s.insert(1);
